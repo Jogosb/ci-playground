@@ -7,6 +7,6 @@ class SampleTest {
 
     @Test
     fun `just a test`() {
-        assertEquals(false, 2 != 2)
+        assertEquals(true, 2 == 2)
     }
 }
