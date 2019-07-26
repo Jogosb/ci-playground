@@ -1,0 +1,46 @@
+buildscript {
+    ext.grgit = '3.0.0'
+
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.ajoberstar.grgit:grgit-core:$grgit"
+        classpath "org.ajoberstar.grgit:grgit-gradle:$grgit"
+    }
+}
+
+import org.ajoberstar.grgit.Grgit
+
+ext {
+    git = Grgit.open(currentDir: projectDir)
+
+    branch = System.getenv("BITRISE_GIT_BRANCH")
+    if (branch != null && branch.contains("/")) {
+        versionAppName = branch.split("/")[1]
+        versionAppCode = System.getenv("BITRISE_BUILD_NUMBER") as Integer
+    } else {
+        // if we use only git.describe() we may get version in wrong format e.g 1.2.5-1-abcfr
+        // to avoid this situation and always received version in format x.y.z we need to add below logic
+        list = git.tag.list()
+        name = list[list.size() - 1].fullName
+        if (name != null && name.split("/")[2] != null) {
+            versionAppName = name.split("/")[2]
+        } else {
+            versionAppName = git.describe()
+        }
+        versionAppCode = git.log().size()
+    }
+
+    releaseNote = git.head().getShortMessage()
+}
+
+task getAppInfo {
+    doLast {
+        println "Version name - $versionAppName"
+        println "Version code - $versionAppCode"
+        println "Changelog - $releaseNote"
+    }
+}

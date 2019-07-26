@@ -4,14 +4,17 @@ apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
 
+apply from: '../config/build-config.gradle'
+
+
 android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.filipradon.ciplayground"
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 1
-        versionName "1.0"
+        versionCode versionAppCode
+        versionName versionAppName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
