@@ -1,0 +1,51 @@
+buildscript {
+    ext.grgit = '3.0.0'
+
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.ajoberstar.grgit:grgit-core:$grgit"
+        classpath "org.ajoberstar.grgit:grgit-gradle:$grgit"
+    }
+}
+
+import org.ajoberstar.grgit.Grgit
+
+ext {
+
+    git = Grgit.open(currentDir: projectDir)
+
+    branch = System.getenv("BITRISE_GIT_BRANCH")
+
+    if (branch != null) {
+        versionAppCode = System.getenv("BITRISE_BUILD_NUMBER") as Integer
+    } else {
+        versionAppCode = git.log().size()
+    }
+
+    list = git.tag.list()
+    if(list.size() == 0) {
+        name = "refs/tags/0.1.0" // initial app version
+    } else {
+        name = list[list.size() - 1].fullName // examp. refs/tags/1.5.1
+    }
+    if (name != null && name.split("/")[2] != null) {
+        versionAppName = name.split("/")[2] + "-" + versionAppCode // to get 1.5.1
+    } else {
+        versionAppName = git.describe() + "-" + versionAppCode // to get 1.5.1-27-g1ac5fd2
+    }
+
+    releaseNote = git.head().getShortMessage()
+
+}
+
+task getAppInfo {
+    doLast {
+        println "Version name - $versionAppName"
+        println "Version code - $versionAppCode"
+        println "Changelog - $releaseNote"
+    }
+}
